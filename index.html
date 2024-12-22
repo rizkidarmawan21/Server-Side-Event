@@ -1,46 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Server-Sent Events Demo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    #log {
-      background-color: #f3f3f3;
-      padding: 10px;
-      border: 1px solid #ccc;
-      height: 300px;
-      overflow-y: auto;
-    }
-  </style>
-</head>
-<body>
-  <h1>Server-Sent Events (SSE) Demo</h1>
-  <div id="log">Listening for events...</div>
-  
-  <script>
-    const logContainer = document.getElementById("log");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Server-Sent Events Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #log {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Server-Sent Events (SSE) Demo</h1>
+    <button id="fetchName">Hit /nama</button>
+    <div id="log">Listening for events...</div>
 
-    // Membuat koneksi SSE ke server
-    const eventSource = new EventSource("http://localhost:8003/events");
+    <script>
+      const logContainer = document.getElementById("log");
+      const fetchNameButton = document.getElementById("fetchName");
 
-    // Ketika menerima pesan dari server
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const newLog = `<p><strong>${data.time}</strong>: ${data.message} (Active Connections: ${data.activeConnections})</p>`;
-      logContainer.innerHTML += newLog;
-      logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll ke bawah
-    };
+      // Membuat koneksi SSE ke server
+      const eventSource = new EventSource("http://localhost:8003/events");
 
-    // Ketika terjadi error
-    eventSource.onerror = (error) => {
-      logContainer.innerHTML += `<p style="color: red;">Error connecting to server...</p>`;
-      console.error("SSE error:", error);
-    };
-  </script>
-</body>
+      // Ketika menerima pesan dari server
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const newLog = `<p><strong>${data.time}</strong>: ${data.message} (Active Connections: ${data.activeConnections})</p>`;
+        logContainer.innerHTML += newLog;
+        logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll ke bawah
+      };
+
+      // Ketika terjadi error
+      eventSource.onerror = (error) => {
+        logContainer.innerHTML += `<p style="color: red;">Error connecting to server...</p>`;
+        console.error("SSE error:", error);
+      };
+
+      fetchNameButton.addEventListener("click", async () => {
+        try {
+          const response = await fetch("http://localhost:8003/nama");
+          const data = await response.json();
+          logContainer.innerHTML += `<p style="color: orange"><strong>Server Response:</strong> ${data.message} (Name: ${data.name})</p>`;
+        } catch (error) {
+          console.error("Error fetching /nama:", error);
+          logContainer.innerHTML += `<p style="color: red;">Failed to fetch /nama</p>`;
+        }
+      });
+    </script>
+  </body>
 </html>
